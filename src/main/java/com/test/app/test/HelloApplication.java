@@ -4,7 +4,6 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import java.io.IOException;
 
@@ -14,7 +13,6 @@ public class HelloApplication extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("manage-user.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1360, 760);
         stage.setTitle("EZYSHOP - Point Of Sale System v2.5");
-//        stage.initStyle(StageStyle.UNDECORATED);
         stage.setMinHeight(scene.getHeight());
         stage.setMinWidth(scene.getWidth());
         stage.setScene(scene);
