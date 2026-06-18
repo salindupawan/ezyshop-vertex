@@ -5,7 +5,7 @@ import com.test.app.test.repository.UserRepository;
 import javafx.collections.ObservableList;
 
 public class UserService {
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public UserService(){
         userRepository = UserRepository.getInstance();

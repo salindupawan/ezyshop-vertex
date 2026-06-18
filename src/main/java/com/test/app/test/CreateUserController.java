@@ -1,16 +1,72 @@
 package com.test.app.test;
 
+import com.test.app.test.entity.User;
+import com.test.app.test.service.UserService;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
+import org.controlsfx.validation.*;
+import org.controlsfx.validation.decoration.ValidationDecoration;
 
 import java.io.IOException;
+import java.util.Date;
 
 public class CreateUserController {
+    @FXML private TextField txtFirstName;
+    @FXML private TextField txtLastName;
+    @FXML private TextField txtUsername;
+    @FXML private TextField txtEmail;
+    @FXML private TextField txtPhoneNumber;
+    @FXML private TextField txtUserId;
+
+    @FXML private DatePicker dpStartDate;
+    @FXML private ComboBox<String> cmbDuration;
+
+    @FXML private PasswordField txtPassword;
+    @FXML private PasswordField txtConfirmPassword;
+    @FXML private TextField txtMaxAttempts;
+    @FXML private TextField txtLockoutDuration;
+    @FXML private ComboBox<String> cmbRole;
+    @FXML private ComboBox<String> cmbStatus;
+
+    @FXML private Button btnSave;
+
+    private final ValidationSupport validationSupport = new ValidationSupport();
+    private UserService userService;
+
+    @FXML
+    public void initialize() {
+        userService  = new UserService();
+        populateChoiceContainers();
+        configureDefaultFormStates();
+
+        validationSupport.setErrorDecorationEnabled(false);
+        validationSupport.setValidationDecorator(new ValidationDecoration() {
+
+            @Override
+            public void removeDecorations(Control control) {
+
+            }
+
+            @Override
+            public void applyValidationDecoration(ValidationMessage validationMessage) {
+
+            }
+
+            @Override
+            public void applyRequiredDecoration(Control control) {
+
+            }
+        });
+
+        setupFormValidationRules();
+        configureActionListeners();
+    }
 
     @FXML
     private void openManageUserWindow(ActionEvent event) {
@@ -29,8 +85,155 @@ public class CreateUserController {
         }
     }
 
-    @FXML
-    private void createUser(ActionEvent event) {
+    private void populateChoiceContainers() {
+        // Contract Duration choices in months
+        cmbDuration.getItems().addAll("6", "12", "24", "36");
+
+        // POS System authorization profiles
+        cmbRole.getItems().addAll("Admin", "Manager", "Cashier", "Auditor");
+
+        // Active initialization states
+        cmbStatus.getItems().addAll("Active", "Inactive");
+    }
+
+    private void configureDefaultFormStates() {
+        // Generate placeholder automatic ID or use a sequential standard string
+        txtUserId.setText("USR-" + System.currentTimeMillis() % 100000);
+
+        // Default values according to design rules
+        txtMaxAttempts.setText("3");
+        txtLockoutDuration.setText("15");
+        cmbDuration.getSelectionModel().selectFirst();
+        cmbStatus.getSelectionModel().selectFirst();
+        cmbRole.getSelectionModel().selectFirst();
+    }
+
+    private void setupFormValidationRules() {
+        // Required textual parameters
+        validationSupport.registerValidator(txtFirstName, Validator.createEmptyValidator("First name is required."));
+        validationSupport.registerValidator(txtLastName, Validator.createEmptyValidator("Last name is required."));
+        validationSupport.registerValidator(txtUsername, Validator.createEmptyValidator("Username is required."));
+
+        // Sri Lankan Phone constraints: exactly 10 numeric digits
+        validationSupport.registerValidator(txtPhoneNumber, Validator.createPredicateValidator(
+                input -> input != null && input.toString().matches("\\d{10}"),
+                "Phone number must be exactly 10 digits."
+        ));
+
+        // Optional input parameter with structural rule check (Regex Match Email)
+        validationSupport.registerValidator(txtEmail, false, (control, innerValue) -> {
+            String emailStr = (innerValue == null) ? "" : innerValue.toString().trim();
+            boolean isValid = !emailStr.isEmpty() && !emailStr.matches("^[A-Za-z0-9+_.-]+@(.+)$");
+            return ValidationResult.fromErrorIf(control,"Enter Valid email.", isValid);
+        });
+
+        // Employment Start Date Validation
+        validationSupport.registerValidator(dpStartDate, false, (control, innerValue) -> {
+            java.time.LocalDate selectedDate = dpStartDate.getValue();
+
+            // 1. Check if empty
+            if (selectedDate == null) {
+                return org.controlsfx.validation.ValidationResult.fromError(control, "Employment start date is required.");
+            }
+
+            // 2. Optional: Ensure the date isn't set in the future
+            boolean isFutureDate = selectedDate.isAfter(java.time.LocalDate.now());
+
+            return org.controlsfx.validation.ValidationResult.fromErrorIf(
+                    control,
+                    "Start date cannot be a future date.",
+                    isFutureDate
+            );
+        });
+
+        // Drop-down choice selections
+        validationSupport.registerValidator(cmbRole, Validator.createEmptyValidator("Role profile must be assigned."));
+        validationSupport.registerValidator(cmbStatus, Validator.createEmptyValidator("Status level selection is required."));
+
+        // Mandatory credentials requirements
+        validationSupport.registerValidator(txtPassword, Validator.createPredicateValidator(
+                input -> input != null && input.toString().length() >= 6,
+                "Password must contain at least 6 characters."
+        ));
+
+        // Security password match matching verification check
+        validationSupport.registerValidator(txtConfirmPassword, false, (control, innerValue) -> {
+            String originalPass = txtPassword.getText();
+            String verificationPass = (innerValue == null) ? "" : innerValue.toString();
+            boolean isMatching = !verificationPass.equals(originalPass);
+            return ValidationResult.fromErrorIf(control, "Password does not match.", isMatching);
+        });
+
 
     }
+
+    private void configureActionListeners() {
+        btnSave.setOnAction(event -> {
+            if (validationSupport.isInvalid()) {
+                StringBuilder errorReport = new StringBuilder("Please correct the following errors:\n");
+
+                validationSupport.getValidationResult().getMessages().forEach(message -> {
+                    errorReport.append("- ").append(message.getText()).append("\n");
+                });
+
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Validation Error");
+                alert.setHeaderText("Form Submission Incomplete");
+                alert.setContentText(errorReport.toString());
+                alert.showAndWait();
+
+            } else {
+                try {
+                    User newUser = mapInputToUserEntity();
+                    userService.saveUser(newUser);
+
+                    System.out.println("User saved successfully: " + newUser.getUserName());
+
+                    openManageUserWindow(event);
+
+                } catch (Exception e) {
+                    Alert errorAlert = new Alert(Alert.AlertType.ERROR, "Failed to compile user payload: " + e.getMessage());
+                    errorAlert.showAndWait();
+                }
+            }
+        });
+    }
+
+    private User mapInputToUserEntity() {
+        // Safe Conversion: JavaFX LocalDatePicker to standard java.util.Date
+        Date parsedStartDate = null;
+        if (dpStartDate.getValue() != null) {
+            parsedStartDate = Date.from(
+                    dpStartDate.getValue()
+                            .atStartOfDay(java.time.ZoneId.systemDefault())
+                            .toInstant()
+            );
+        }
+
+        // Safe Numeric Parsing with Fallbacks
+        long duration = cmbDuration.getValue() == null ? 0L : Long.parseLong(cmbDuration.getValue());
+        int maxAttempts = txtMaxAttempts.getText().trim().isEmpty() ? 3 : Integer.parseInt(txtMaxAttempts.getText().trim());
+        int lockout = txtLockoutDuration.getText().trim().isEmpty() ? 15 : Integer.parseInt(txtLockoutDuration.getText().trim());
+
+        User user = new User();
+        user.setFirstName(txtFirstName.getText().trim());
+        user.setLastName(txtLastName.getText().trim());
+        user.setUserName(txtUsername.getText().trim());
+        user.setEmail(txtEmail.getText().trim().toLowerCase());
+        user.setPhoneNumber(txtPhoneNumber.getText().trim());
+        user.setUserId(txtUserId.getText());
+        user.setStartDate(parsedStartDate);
+        user.setContractDuration(duration);
+        user.setPassword(txtPassword.getText());
+        user.setMaxLoginAttempts(maxAttempts);
+        user.setLockoutDuration(lockout);
+        user.setRole(cmbRole.getValue());
+        user.setStatus(cmbStatus.getValue());
+
+        return user;
+    }
+
+
+
+
 }
