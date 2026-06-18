@@ -86,21 +86,14 @@ public class CreateUserController {
     }
 
     private void populateChoiceContainers() {
-        // Contract Duration choices in months
         cmbDuration.getItems().addAll("6", "12", "24", "36");
-
-        // POS System authorization profiles
         cmbRole.getItems().addAll("Admin", "Manager", "Cashier", "Auditor");
-
-        // Active initialization states
         cmbStatus.getItems().addAll("Active", "Inactive");
     }
 
     private void configureDefaultFormStates() {
-        // Generate placeholder automatic ID or use a sequential standard string
         txtUserId.setText("USR-" + System.currentTimeMillis() % 100000);
 
-        // Default values according to design rules
         txtMaxAttempts.setText("3");
         txtLockoutDuration.setText("15");
         cmbDuration.getSelectionModel().selectFirst();
@@ -109,34 +102,28 @@ public class CreateUserController {
     }
 
     private void setupFormValidationRules() {
-        // Required textual parameters
         validationSupport.registerValidator(txtFirstName, Validator.createEmptyValidator("First name is required."));
         validationSupport.registerValidator(txtLastName, Validator.createEmptyValidator("Last name is required."));
         validationSupport.registerValidator(txtUsername, Validator.createEmptyValidator("Username is required."));
 
-        // Sri Lankan Phone constraints: exactly 10 numeric digits
         validationSupport.registerValidator(txtPhoneNumber, Validator.createPredicateValidator(
                 input -> input != null && input.toString().matches("\\d{10}"),
                 "Phone number must be exactly 10 digits."
         ));
 
-        // Optional input parameter with structural rule check (Regex Match Email)
         validationSupport.registerValidator(txtEmail, false, (control, innerValue) -> {
             String emailStr = (innerValue == null) ? "" : innerValue.toString().trim();
             boolean isValid = !emailStr.isEmpty() && !emailStr.matches("^[A-Za-z0-9+_.-]+@(.+)$");
             return ValidationResult.fromErrorIf(control,"Enter Valid email.", isValid);
         });
 
-        // Employment Start Date Validation
         validationSupport.registerValidator(dpStartDate, false, (control, innerValue) -> {
             java.time.LocalDate selectedDate = dpStartDate.getValue();
 
-            // 1. Check if empty
             if (selectedDate == null) {
                 return org.controlsfx.validation.ValidationResult.fromError(control, "Employment start date is required.");
             }
 
-            // 2. Optional: Ensure the date isn't set in the future
             boolean isFutureDate = selectedDate.isAfter(java.time.LocalDate.now());
 
             return org.controlsfx.validation.ValidationResult.fromErrorIf(
@@ -146,17 +133,14 @@ public class CreateUserController {
             );
         });
 
-        // Drop-down choice selections
         validationSupport.registerValidator(cmbRole, Validator.createEmptyValidator("Role profile must be assigned."));
         validationSupport.registerValidator(cmbStatus, Validator.createEmptyValidator("Status level selection is required."));
 
-        // Mandatory credentials requirements
         validationSupport.registerValidator(txtPassword, Validator.createPredicateValidator(
                 input -> input != null && input.toString().length() >= 6,
                 "Password must contain at least 6 characters."
         ));
 
-        // Security password match matching verification check
         validationSupport.registerValidator(txtConfirmPassword, false, (control, innerValue) -> {
             String originalPass = txtPassword.getText();
             String verificationPass = (innerValue == null) ? "" : innerValue.toString();
@@ -187,8 +171,6 @@ public class CreateUserController {
                     User newUser = mapInputToUserEntity();
                     userService.saveUser(newUser);
 
-                    System.out.println("User saved successfully: " + newUser.getUserName());
-
                     openManageUserWindow(event);
 
                 } catch (Exception e) {
@@ -200,7 +182,6 @@ public class CreateUserController {
     }
 
     private User mapInputToUserEntity() {
-        // Safe Conversion: JavaFX LocalDatePicker to standard java.util.Date
         Date parsedStartDate = null;
         if (dpStartDate.getValue() != null) {
             parsedStartDate = Date.from(
@@ -210,7 +191,6 @@ public class CreateUserController {
             );
         }
 
-        // Safe Numeric Parsing with Fallbacks
         long duration = cmbDuration.getValue() == null ? 0L : Long.parseLong(cmbDuration.getValue());
         int maxAttempts = txtMaxAttempts.getText().trim().isEmpty() ? 3 : Integer.parseInt(txtMaxAttempts.getText().trim());
         int lockout = txtLockoutDuration.getText().trim().isEmpty() ? 15 : Integer.parseInt(txtLockoutDuration.getText().trim());
@@ -229,6 +209,8 @@ public class CreateUserController {
         user.setLockoutDuration(lockout);
         user.setRole(cmbRole.getValue());
         user.setStatus(cmbStatus.getValue());
+        user.setCreatedBy("Admin");
+        user.setCreatedAt(new Date());
 
         return user;
     }

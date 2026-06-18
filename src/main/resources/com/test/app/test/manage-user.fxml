@@ -14,26 +14,6 @@
 
 <VBox minHeight="760.0" minWidth="1360.0" prefHeight="760.0" prefWidth="1360.0" style="-fx-background-color: #00364d;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.test.app.test.ManageUserController">
     <children>
-<!--        <HBox alignment="CENTER_LEFT" minHeight="45.0" prefHeight="45.0" style="-fx-background-color: #ffffff;" VBox.vgrow="NEVER">-->
-<!--            <children>-->
-<!--                <Label fx:id="lblTitle" text="EZYSHOP - Point Of Sale System v2.5" textFill="#333333">-->
-<!--                    <font>-->
-<!--                        <Font name="System Bold" size="13.0" />-->
-<!--                    </font>-->
-<!--                    <HBox.margin>-->
-<!--                        <Insets left="20.0" />-->
-<!--                    </HBox.margin>-->
-<!--                </Label>-->
-<!--                <Pane HBox.hgrow="ALWAYS" />-->
-<!--                <Button fx:id="btnMinimize" mnemonicParsing="false" prefHeight="45.0" prefWidth="55.0" style="-fx-background-color: #dcdcdc; -fx-background-radius: 0; -fx-text-fill: #333333; -fx-font-size: 14px;" text="-" />-->
-<!--                <Button fx:id="btnMaximize" mnemonicParsing="false" prefHeight="45.0" prefWidth="55.0" style="-fx-background-color: #e6e6e6; -fx-background-radius: 0; -fx-text-fill: #999999; -fx-font-size: 12px;" text="[  ]" />-->
-<!--                <Button fx:id="btnClose" mnemonicParsing="false" prefHeight="45.0" prefWidth="55.0" style="-fx-background-color: #cc0000; -fx-background-radius: 0; -fx-text-fill: #ffffff;" text="X">-->
-<!--                    <font>-->
-<!--                        <Font name="System Bold" size="13.0" />-->
-<!--                    </font>-->
-<!--                </Button>-->
-<!--            </children>-->
-<!--        </HBox>-->
         <HBox alignment="CENTER_LEFT" minHeight="65.0" prefHeight="75.0" style="-fx-background-color: #002b3d;">
             <children>
                 <Label fx:id="lblHeaderTitle" text="MANAGE USERS" textFill="WHITE">

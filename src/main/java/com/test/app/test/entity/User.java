@@ -23,4 +23,8 @@ public class User {
     private int LockoutDuration;
     private String role;
     private String status;
+    private String createdBy;
+    private String modifiedBy;
+    private Date createdAt;
+    private Date modifiedAt;
 }

@@ -13,5 +13,6 @@ module com.test.app.test {
     requires static lombok;
 
     opens com.test.app.test to javafx.fxml;
+    opens com.test.app.test.entity to javafx.base;
     exports com.test.app.test;
 }
