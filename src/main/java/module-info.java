@@ -10,6 +10,7 @@ module com.test.app.test {
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
+    requires static lombok;
 
     opens com.test.app.test to javafx.fxml;
     exports com.test.app.test;

@@ -28,4 +28,9 @@ public class CreateUserController {
             e.printStackTrace();
         }
     }
+
+    @FXML
+    private void createUser(ActionEvent event) {
+
+    }
 }
